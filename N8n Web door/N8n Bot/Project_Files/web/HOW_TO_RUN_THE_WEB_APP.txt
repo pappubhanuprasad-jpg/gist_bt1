@@ -1,0 +1,147 @@
+COLLEGE ASSISTANT — STANDALONE WEB APP ON LOCALHOST (TEACHING DEMO)
+=====================================================================
+Day 4, Qualverse Solutions. One HTML file, no build step, no npm.
+NOTE: This standalone page is for testing the n8n workflow on its own.
+To run the chatbot inside the GIST SMS FastAPI application, see:
+    N8n Bot\README.md
+    N8n Bot\Integration\Project_Files\sms_integration\README_INTEGRATION.md
+
+HOW THE TWO HALVES SIT
+----------------------
+This page runs on your laptop. The workflow runs on n8n Cloud. The page sends
+each question over the internet to your cloud instance and shows what comes
+back. Nothing else leaves the laptop.
+
+WHAT YOU NEED FIRST
+-------------------
+1. Your n8n Cloud instance, with the Day 4 workflow imported and Active.
+2. The knowledge base built: open the workflow and run Stage 1 once.
+3. The Ask Webhook node's Production URL, which looks like
+      https://your-instance.app.n8n.cloud/webhook/college-ask
+   and the access key from its Header Auth credential.
+
+
+RUN IT — THE WAY THAT ALWAYS WORKS
+----------------------------------
+From the GIST SMS repository root (c:\COlleg SMS), open a PowerShell terminal,
+change into this folder, and start Python's built-in web server:
+
+    cd "N8n Bot\Project_Files\web"
+    python -m http.server 8080
+
+(Or using the project virtualenv from repo root:
+    ..\..\venv\Scripts\python.exe -m http.server 8080)
+
+Then open  http://localhost:8080  in the browser.
+
+Why a server and not a double-click: a page opened as a file has no origin of
+its own, and some browsers refuse to let it call n8n. Served from
+http://localhost:8080 it behaves like a normal web app. Stop the server with
+Ctrl+C when the session is over.
+
+Double-clicking index.html does work in most browsers. If the page says it
+could not reach the workflow, start the server as above instead.
+
+
+ONE SETTING IN N8N — WITHOUT IT THE PAGE CANNOT CALL THE WORKFLOW
+-----------------------------------------------------------------
+Open the Ask Webhook node, then Options, then Add option, then
+Allowed Origins (CORS), and put a single asterisk:
+
+    *
+
+A page served from localhost calling a workflow on n8n Cloud is a
+cross-origin call, so the browser asks the cloud for permission before it
+sends anything. With no allowed origin set, n8n says nothing, the browser
+blocks the call, and the page reports "could not reach the workflow" even
+though the workflow is Active and healthy. The asterisk means "any page may
+call me" — right for a classroom. For a real deployment put the exact origin
+there instead, for example http://localhost:8080
+
+The page is http and the cloud is https. That direction is allowed; a page on
+https calling a plain http address is what browsers block.
+
+
+FIRST RUN
+---------
+The page opens on a short Connection form.
+
+    WEBHOOK URL   https://your-instance.app.n8n.cloud/webhook/college-ask
+    ACCESS KEY    the value you typed into the Header Auth credential
+
+Press Save and start. Both are stored in that browser only and are never shown
+on screen again. Nothing is sent anywhere except your own n8n.
+
+While you are still building the workflow, use the Test URL instead:
+
+    https://your-instance.app.n8n.cloud/webhook-test/college-ask
+
+and press Execute workflow in n8n before every question. The Test URL listens
+for exactly one call, so it must be armed again for the next question. Once
+the workflow is Active, switch to the Production URL above and it answers
+every time.
+
+The Connection button in the top right reopens the form if you need to change
+the address or retype the key.
+
+
+WHAT TO ASK IT
+--------------
+The eight suggestion buttons under the header cover the usual ground: fee
+structure, registration for a first year student, documents to bring, branch
+intake, internal and external marks, minimum attendance, head of department,
+hostel and transport charges. Typing works the same way. Enter sends;
+Shift+Enter makes a new line.
+
+
+IF SOMETHING GOES WRONG
+-----------------------
+What you see                        What it means
+----------------------------------  ----------------------------------------
+Could not reach the workflow        Nearly always Allowed Origins (CORS) is
+                                    not set on the Webhook node. Otherwise the
+                                    URL is wrong: it must start https:// and
+                                    end /webhook/college-ask.
+
+Refused the key (401 or 403)        The key in the page does not match the
+                                    Header Auth credential. Press Connection
+                                    and retype it. The header name must be
+                                    x-college-key, with no spaces.
+
+No workflow answered (404)          Using the Test URL without pressing
+                                    Execute workflow, or the workflow is not
+                                    Active, or the path is misspelt.
+
+Stopped with an error (500)         Open the execution in n8n and look at the
+                                    node marked red. Two usual causes: the
+                                    knowledge base was never built (run
+                                    Stage 1), or the instance restarted and
+                                    emptied it (run Stage 1 again).
+
+Security violations detected        A Python Code node has an import line.
+                                    n8n Cloud allows no Python imports at all,
+                                    not even the standard library. The nodes
+                                    shipped here import nothing — if you add
+                                    an import, this is the error you get.
+
+Replied with no answer field        The Format Answer node is not the last
+                                    node before Respond to Webhook, or its
+                                    code was changed.
+
+It answers but makes things up      The agent did not call the handbook tool.
+                                    Check the System Message and that the
+                                    College Handbook Tool is attached to the
+                                    agent.
+
+
+A WORD ON THE ACCESS KEY
+------------------------
+The key is a password. It lives in the browser's storage on that one laptop.
+Do not put it on a slide, in a screenshot, in a WhatsApp message or in a
+document you share. If it is ever seen by the room, delete the credential in
+n8n and make a new one — it takes a minute.
+
+Anyone who can open this page and has the key can ask the workflow questions.
+That is fine for a classroom on one machine. Before putting a page like this
+on a real website, the key moves to a small server of your own that sits
+between the page and n8n, so the browser never holds it.

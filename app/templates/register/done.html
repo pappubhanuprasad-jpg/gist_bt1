@@ -1,0 +1,33 @@
+{% extends "base_public.html" %}
+
+{% block title %}Registration Submitted{% endblock %}
+
+{% block content %}
+<div class="card card-sms bg-white p-4 p-lg-5 text-center">
+    <span class="status-pill status-approved mb-3">Application Received</span>
+    <h3 class="fw-bold text-navy mb-2">Registration Successful!</h3>
+    <p class="text-muted mb-4">
+        Thank you, <strong>{{ registration.full_name }}</strong>. Your application for
+        <strong>{{ department.code if department else 'B.Tech' }}</strong> has been forwarded to the Department HOD.
+    </p>
+
+    <div class="p-4 rounded mb-3" style="background-color: #F4F6FA; border: 2px dashed #0B2150;">
+        <small class="text-uppercase text-muted d-block mb-1 fw-semibold">Application Reference Number</small>
+        <div class="display-6 fw-bold text-navy font-monospace">{{ registration.reference_no }}</div>
+    </div>
+
+    <p class="fw-semibold text-danger mb-4">
+        Save this number to track your application
+    </p>
+
+    <div class="d-flex justify-content-center gap-2 flex-wrap">
+        <a href="/register/status?ref={{ registration.reference_no }}"
+           class="btn text-white px-4" style="background-color: #0B2150;">
+            Track Application Status
+        </a>
+        <a href="/login" class="btn btn-outline-secondary px-4">
+            Back to Login
+        </a>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,56 @@
+{% extends "sqladmin/base.html" %}
+
+{% block body %}
+<div class="d-flex align-items-center justify-content-center vh-100 bg-light">
+    <div class="card shadow-sm border-0" style="width: 100%; max-width: 420px; border-radius: 12px;">
+        <div class="card-body p-4 p-md-5">
+            <div class="text-center mb-4">
+                <span class="badge mb-2" style="background-color: #C9A227; color: #0B2150;">MANAGEMENT ONLY</span>
+                <h3 class="fw-bold mb-1" style="color: #0B2150;">{{ admin.title }}</h3>
+                <p class="text-muted small mb-0">Sign in with your Management account</p>
+            </div>
+
+            {% if error %}
+            <div class="alert alert-danger py-2 small" role="alert">
+                {{ error }}
+            </div>
+            {% endif %}
+
+            <form action="{{ request.url_for('admin:login') }}" method="POST" autocomplete="off">
+                <div class="mb-3">
+                    <label class="form-label fw-medium">Username</label>
+                    <input type="text"
+                           name="username"
+                           class="form-control"
+                           placeholder="management@college.edu"
+                           required
+                           autofocus>
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label fw-medium">Password</label>
+                    <input type="password"
+                           name="password"
+                           class="form-control"
+                           placeholder="Enter password"
+                           required>
+                </div>
+
+                <div class="d-grid mb-3">
+                    <button type="submit"
+                            class="btn text-white fw-semibold py-2"
+                            style="background-color: #0B2150;">
+                        Sign In to Admin
+                    </button>
+                </div>
+
+                <div class="text-center pt-2 border-top">
+                    <a href="/login" class="text-decoration-none small fw-semibold" style="color: #0B2150;">
+                        &larr; Go back to main login page
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

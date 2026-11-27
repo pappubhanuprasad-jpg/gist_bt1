@@ -1,0 +1,121 @@
+{% extends "base.html" %}
+
+{% block title %}Registrations — {{ department.code }}{% endblock %}
+
+{% block content %}
+<!-- 4 KPI Cards -->
+<div class="row g-3 mb-4">
+    <div class="col-12 col-sm-6 col-xl-3">
+        <div class="card card-sms bg-white p-3">
+            <div class="text-muted small fw-semibold text-uppercase">Pending Review</div>
+            <div class="kpi-number mt-1 text-warning">{{ pending_count }}</div>
+            <div class="small text-muted">Awaiting {{ department.code }} HOD action</div>
+        </div>
+    </div>
+    <div class="col-12 col-sm-6 col-xl-3">
+        <div class="card card-sms bg-white p-3">
+            <div class="text-muted small fw-semibold text-uppercase">Approved This Year</div>
+            <div class="kpi-number mt-1 text-success">
+                {{ approved_this_year }} <span class="fs-6 fw-normal text-muted">/ {{ department.intake }}</span>
+            </div>
+            <div class="small text-muted">Filled vs. branch intake</div>
+        </div>
+    </div>
+    <div class="col-12 col-sm-6 col-xl-3">
+        <div class="card card-sms bg-white p-3">
+            <div class="text-muted small fw-semibold text-uppercase">Sent Back</div>
+            <div class="kpi-number mt-1">{{ correction_count }}</div>
+            <div class="small text-muted">Returned for correction</div>
+        </div>
+    </div>
+    <div class="col-12 col-sm-6 col-xl-3">
+        <div class="card card-sms bg-white p-3">
+            <div class="text-muted small fw-semibold text-uppercase">Rejected</div>
+            <div class="kpi-number mt-1 text-danger">{{ rejected_count }}</div>
+            <div class="small text-muted">Declined applications</div>
+        </div>
+    </div>
+</div>
+
+<!-- Filter Tabs + Registrations Table -->
+<div class="card card-sms bg-white p-4">
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
+        <ul class="nav nav-pills">
+            {% set tabs = [
+                ("all", "All"),
+                ("pending", "Pending"),
+                ("approved", "Approved"),
+                ("correction", "Sent Back"),
+                ("rejected", "Rejected")
+            ] %}
+            {% for key, label in tabs %}
+            <li class="nav-item">
+                <a class="nav-link {% if status_filter == key %}active{% endif %}"
+                   {% if status_filter == key %}style="background-color: #0B2150;"{% endif %}
+                   href="/hod/registrations?status_filter={{ key }}">
+                    {{ label }}
+                </a>
+            </li>
+            {% endfor %}
+        </ul>
+        <span class="text-muted small">Showing <strong>{{ rows | length }}</strong> application(s)</span>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th>Reference</th>
+                    <th>Applicant Name</th>
+                    <th>Quota</th>
+                    <th>Rank</th>
+                    <th>Inter %</th>
+                    <th>Documents</th>
+                    <th>Status</th>
+                    <th class="text-end">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in rows %}
+                {% set r = row.reg %}
+                {% set st = r.status.value if r.status.value is defined else r.status %}
+                <tr>
+                    <td class="font-monospace fw-semibold">{{ r.reference_no }}</td>
+                    <td>
+                        <div class="fw-medium">{{ r.full_name }}</div>
+                        <small class="text-muted">{{ r.email }}</small>
+                    </td>
+                    <td class="text-uppercase small">{{ r.quota }}</td>
+                    <td>{{ r.entrance_rank or "—" }}</td>
+                    <td>{{ "%.2f"|format(r.inter_percent) }}%</td>
+                    <td><span class="badge bg-light text-dark border">{{ row.docs_count }}</span></td>
+                    <td>
+                        {% if st == 'approved' %}
+                        <span class="status-pill status-approved">Approved</span>
+                        {% elif st == 'rejected' %}
+                        <span class="status-pill status-rejected">Rejected</span>
+                        {% elif st == 'correction' %}
+                        <span class="status-pill status-pending">Correction</span>
+                        {% else %}
+                        <span class="status-pill status-pending">Pending</span>
+                        {% endif %}
+                    </td>
+                    <td class="text-end">
+                        <a href="/hod/registrations/{{ r.id }}"
+                           class="btn btn-sm text-white" style="background-color: #0B2150;">
+                            Review
+                        </a>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="8" class="text-center text-muted py-4">
+                        No applications found in {{ department.code }} for this filter.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

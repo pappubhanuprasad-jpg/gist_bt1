@@ -1,0 +1,374 @@
+{% extends "base_public.html" %}
+
+{% block title %}First-Year B.Tech Registration{% endblock %}
+
+{% block content %}
+<div class="card card-sms bg-white p-4 p-lg-5">
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-2">
+        <div>
+            <h4 class="fw-bold text-navy mb-1">First-Year B.Tech Application</h4>
+            <p class="text-muted small mb-0">Complete all 4 steps carefully before submitting.</p>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="/register/status" class="btn btn-outline-secondary btn-sm">Track Status</a>
+            <a href="/login" class="btn btn-outline-primary btn-sm">Back to Login</a>
+        </div>
+    </div>
+
+    {% if errors %}
+    <div class="alert alert-danger" role="alert">
+        <strong class="d-block mb-1">Please fix the following errors:</strong>
+        <ul class="mb-0 small">
+            {% for err in errors %}
+            <li>{{ err }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+
+    {% if not departments %}
+    <div class="alert alert-warning small">
+        No departments found in the database yet. Run <code>python scripts/init_departments.py</code> first.
+    </div>
+    {% endif %}
+
+    <!-- 4-Step Nav Pills -->
+    <ul class="nav nav-pills nav-fill mb-4 p-1 bg-light rounded" id="regStepTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active fw-semibold" id="tab-step1" data-bs-toggle="pill"
+                    data-bs-target="#pane-step1" type="button" role="tab">
+                1. Personal Details
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link fw-semibold" id="tab-step2" data-bs-toggle="pill"
+                    data-bs-target="#pane-step2" type="button" role="tab">
+                2. Academic Details
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link fw-semibold" id="tab-step3" data-bs-toggle="pill"
+                    data-bs-target="#pane-step3" type="button" role="tab">
+                3. Documents
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link fw-semibold" id="tab-step4" data-bs-toggle="pill"
+                    data-bs-target="#pane-step4" type="button" role="tab" onclick="populateReview()">
+                4. Review &amp; Submit
+            </button>
+        </li>
+    </ul>
+
+    <form method="post" action="/register" enctype="multipart/form-data" id="registrationForm" novalidate>
+        <div class="tab-content" id="regStepTabContent">
+
+            <!-- STEP 1: PERSONAL DETAILS -->
+            <div class="tab-pane fade show active" id="pane-step1" role="tabpanel">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label for="full_name" class="form-label fw-medium">Full Name *</label>
+                        <input type="text" class="form-control" id="full_name" name="full_name"
+                               value="{{ form_data.full_name | default('') }}" required>
+                    </div>
+                    <div class="col-md-3">
+                        <label for="dob" class="form-label fw-medium">Date of Birth *</label>
+                        <input type="date" class="form-control" id="dob" name="dob"
+                               value="{{ form_data.dob | default('') }}" required>
+                        <div class="form-text">Must be at least 16 years old.</div>
+                    </div>
+                    <div class="col-md-3">
+                        <label for="gender" class="form-label fw-medium">Gender *</label>
+                        <select class="form-select" id="gender" name="gender" required>
+                            <option value="">Choose...</option>
+                            {% for g in ["Male", "Female", "Other"] %}
+                            <option value="{{ g }}" {% if form_data.gender == g %}selected{% endif %}>{{ g }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label for="phone" class="form-label fw-medium">Mobile Number (10 digits) *</label>
+                        <input type="text" class="form-control" id="phone" name="phone"
+                               maxlength="10" pattern="\d{10}" placeholder="9876543210"
+                               value="{{ form_data.phone | default('') }}" required>
+                    </div>
+                    <div class="col-md-4">
+                        <label for="email" class="form-label fw-medium">Email Address *</label>
+                        <input type="email" class="form-control" id="email" name="email"
+                               placeholder="student@example.com"
+                               value="{{ form_data.email | default('') }}" required>
+                    </div>
+                    <div class="col-md-4">
+                        <label for="parent_name" class="form-label fw-medium">Parent / Guardian Name *</label>
+                        <input type="text" class="form-control" id="parent_name" name="parent_name"
+                               value="{{ form_data.parent_name | default('') }}" required>
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-end mt-4">
+                    <button type="button" class="btn text-white px-4" style="background-color: #0B2150;"
+                            onclick="validateAndGoForward('pane-step1', 'tab-step2')">
+                        Next: Academic Details &rarr;
+                    </button>
+                </div>
+            </div>
+
+            <!-- STEP 2: ACADEMIC DETAILS -->
+            <div class="tab-pane fade" id="pane-step2" role="tabpanel">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label for="department_id" class="form-label fw-medium">Preferred B.Tech Branch *</label>
+                        <select class="form-select" id="department_id" name="department_id" required>
+                            <option value="">Select Branch...</option>
+                            {% for dept in departments %}
+                            <option value="{{ dept.id }}"
+                                    {% if form_data.department_id == dept.id %}selected{% endif %}>
+                                {{ dept.code }} — {{ dept.name }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label for="quota" class="form-label fw-medium">Admission Quota *</label>
+                        <select class="form-select" id="quota" name="quota" required>
+                            <option value="">Select Quota...</option>
+                            <option value="convener" {% if form_data.quota == 'convener' %}selected{% endif %}>Convener</option>
+                            <option value="management" {% if form_data.quota == 'management' %}selected{% endif %}>Management</option>
+                            <option value="spot" {% if form_data.quota == 'spot' %}selected{% endif %}>Spot</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label for="entrance_rank" class="form-label fw-medium">Entrance Rank (Optional)</label>
+                        <input type="number" class="form-control" id="entrance_rank" name="entrance_rank"
+                               min="1" placeholder="e.g. 12450"
+                               value="{{ form_data.entrance_rank | default('') }}">
+                    </div>
+                    <div class="col-md-6">
+                        <label for="tenth_percent" class="form-label fw-medium">10th Class Percentage (0–100) *</label>
+                        <input type="number" step="0.01" min="0" max="100" class="form-control"
+                               id="tenth_percent" name="tenth_percent" placeholder="e.g. 92.5"
+                               value="{{ form_data.tenth_percent | default('') }}" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="inter_percent" class="form-label fw-medium">Intermediate / 12th Percentage (0–100) *</label>
+                        <input type="number" step="0.01" min="0" max="100" class="form-control"
+                               id="inter_percent" name="inter_percent" placeholder="e.g. 89.4"
+                               value="{{ form_data.inter_percent | default('') }}" required>
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-between mt-4">
+                    <button type="button" class="btn btn-outline-secondary" onclick="goToStep('tab-step1')">
+                        &larr; Previous
+                    </button>
+                    <button type="button" class="btn text-white px-4" style="background-color: #0B2150;"
+                            onclick="validateAndGoForward('pane-step2', 'tab-step3')">
+                        Next: Documents &rarr;
+                    </button>
+                </div>
+            </div>
+
+            <!-- STEP 3: DOCUMENTS -->
+            <div class="tab-pane fade" id="pane-step3" role="tabpanel">
+                <p class="small text-muted mb-3">
+                    Allowed formats: <strong>.jpg, .jpeg, .png, .pdf</strong>. Maximum file size: <strong>2 MB each</strong>.
+                </p>
+
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <label for="photo" class="form-label fw-medium">Passport Photo *</label>
+                        <input type="file" class="form-control" id="photo" name="photo"
+                               accept=".jpg,.jpeg,.png,.pdf" required>
+                    </div>
+                    <div class="col-md-4">
+                        <label for="marks_memo" class="form-label fw-medium">10+2 Marks Memo *</label>
+                        <input type="file" class="form-control" id="marks_memo" name="marks_memo"
+                               accept=".jpg,.jpeg,.png,.pdf" required>
+                    </div>
+                    <div class="col-md-4">
+                        <label for="id_proof" class="form-label fw-medium">Government ID Proof *</label>
+                        <input type="file" class="form-control" id="id_proof" name="id_proof"
+                               accept=".jpg,.jpeg,.png,.pdf" required>
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-between mt-4">
+                    <button type="button" class="btn btn-outline-secondary" onclick="goToStep('tab-step2')">
+                        &larr; Previous
+                    </button>
+                    <button type="button" class="btn text-white px-4" style="background-color: #0B2150;"
+                            onclick="if (validateAndGoForward('pane-step3', 'tab-step4')) populateReview();">
+                        Next: Review &rarr;
+                    </button>
+                </div>
+            </div>
+
+            <!-- STEP 4: REVIEW AND SUBMIT -->
+            <div class="tab-pane fade" id="pane-step4" role="tabpanel">
+                <div class="border rounded p-3 bg-light mb-4">
+                    <h6 class="fw-bold text-navy mb-3">Application Summary</h6>
+                    <div class="row g-2 small">
+                        <div class="col-md-6"><strong>Full Name:</strong> <span id="rev_full_name">-</span></div>
+                        <div class="col-md-6"><strong>Date of Birth:</strong> <span id="rev_dob">-</span></div>
+                        <div class="col-md-6"><strong>Gender:</strong> <span id="rev_gender">-</span></div>
+                        <div class="col-md-6"><strong>Phone:</strong> <span id="rev_phone">-</span></div>
+                        <div class="col-md-6"><strong>Email:</strong> <span id="rev_email">-</span></div>
+                        <div class="col-md-6"><strong>Parent Name:</strong> <span id="rev_parent_name">-</span></div>
+                        <div class="col-md-6"><strong>Branch:</strong> <span id="rev_department">-</span></div>
+                        <div class="col-md-6"><strong>Quota:</strong> <span id="rev_quota">-</span></div>
+                        <div class="col-md-6"><strong>Entrance Rank:</strong> <span id="rev_entrance_rank">-</span></div>
+                        <div class="col-md-6"><strong>10th Percentage:</strong> <span id="rev_tenth_percent">-</span></div>
+                        <div class="col-md-6"><strong>12th Percentage:</strong> <span id="rev_inter_percent">-</span></div>
+                        <div class="col-md-6"><strong>Photo:</strong> <span id="rev_photo">-</span></div>
+                        <div class="col-md-6"><strong>Marks Memo:</strong> <span id="rev_marks_memo">-</span></div>
+                        <div class="col-md-6"><strong>ID Proof:</strong> <span id="rev_id_proof">-</span></div>
+                    </div>
+                </div>
+
+                <div class="form-check mb-4">
+                    <input class="form-check-input" type="checkbox" id="confirm_details" required>
+                    <label class="form-check-label small" for="confirm_details">
+                        I confirm that all the information and documents provided above are true and correct.
+                    </label>
+                </div>
+
+                <div class="d-flex justify-content-between mt-4">
+                    <button type="button" class="btn btn-outline-secondary" onclick="goToStep('tab-step3')">
+                        &larr; Previous
+                    </button>
+                    <button type="submit" class="btn text-white px-4 fw-semibold" style="background-color: #0B2150;">
+                        Submit Application
+                    </button>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+<script>
+function goToStep(tabId) {
+    const trigger = document.getElementById(tabId);
+    if (!trigger) return;
+    bootstrap.Tab.getOrCreateInstance(trigger).show();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function paneFields(pane) {
+    return Array.from(pane.querySelectorAll('input, select, textarea'));
+}
+
+function firstInvalidField(pane) {
+    return paneFields(pane).find(function (field) {
+        return !field.checkValidity();
+    });
+}
+
+function validateAndGoForward(currentPaneId, nextTabId) {
+    const pane = document.getElementById(currentPaneId);
+    const invalid = pane ? firstInvalidField(pane) : null;
+    if (invalid) {
+        invalid.reportValidity();
+        return false;
+    }
+    goToStep(nextTabId);
+    return true;
+}
+
+function fieldValue(id) {
+    const el = document.getElementById(id);
+    return el && el.value.trim() ? el.value.trim() : '-';
+}
+
+function selectedText(id) {
+    const el = document.getElementById(id);
+    if (!el || !el.value) return '-';
+    return el.options[el.selectedIndex].text.trim();
+}
+
+function fileName(id) {
+    const el = document.getElementById(id);
+    return el && el.files.length ? el.files[0].name : '-';
+}
+
+function populateReview() {
+    ['full_name', 'dob', 'gender', 'phone', 'email', 'parent_name',
+     'entrance_rank', 'tenth_percent', 'inter_percent'].forEach(function (name) {
+        const target = document.getElementById('rev_' + name);
+        if (target) target.textContent = fieldValue(name);
+    });
+
+    const dept = document.getElementById('rev_department');
+    if (dept) dept.textContent = selectedText('department_id');
+
+    const quota = document.getElementById('rev_quota');
+    if (quota) quota.textContent = selectedText('quota');
+
+    ['photo', 'marks_memo', 'id_proof'].forEach(function (name) {
+        const target = document.getElementById('rev_' + name);
+        if (target) target.textContent = fileName(name);
+    });
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+    // Keep the maximum selectable DOB at "today minus 16 years".
+    const dob = document.getElementById('dob');
+    if (dob) {
+        const today = new Date();
+        const maxDob = new Date(today.getFullYear() - 16, today.getMonth(), today.getDate());
+        dob.max = maxDob.toISOString().slice(0, 10);
+    }
+
+    // Friendly client-side file checks. The server re-validates every upload.
+    const allowedExtensions = ['.jpg', '.jpeg', '.png', '.pdf'];
+    const maxBytes = 2 * 1024 * 1024;
+
+    ['photo', 'marks_memo', 'id_proof'].forEach(function (name) {
+        const input = document.getElementById(name);
+        if (!input) return;
+        input.addEventListener('change', function () {
+            if (!input.files.length) return;
+            const file = input.files[0];
+            const dot = file.name.lastIndexOf('.');
+            const ext = dot === -1 ? '' : file.name.slice(dot).toLowerCase();
+
+            if (!allowedExtensions.includes(ext)) {
+                alert('Only .jpg, .jpeg, .png, and .pdf files are allowed.');
+                input.value = '';
+                return;
+            }
+            if (file.size > maxBytes) {
+                const size = (file.size / (1024 * 1024)).toFixed(2);
+                alert('Each document must be 2 MB or smaller. "' + file.name + '" is ' + size + ' MB.');
+                input.value = '';
+            }
+        });
+    });
+
+    // Validate each step in order so hidden fields never block a submission.
+    const form = document.getElementById('registrationForm');
+    if (form) {
+        form.addEventListener('submit', function (event) {
+            const steps = [
+                ['pane-step1', 'tab-step1'],
+                ['pane-step2', 'tab-step2'],
+                ['pane-step3', 'tab-step3'],
+                ['pane-step4', 'tab-step4'],
+            ];
+
+            for (const [paneId, tabId] of steps) {
+                const pane = document.getElementById(paneId);
+                const invalid = pane ? firstInvalidField(pane) : null;
+                if (invalid) {
+                    event.preventDefault();
+                    goToStep(tabId);
+                    window.setTimeout(function () { invalid.reportValidity(); }, 300);
+                    return;
+                }
+            }
+
+            populateReview();
+        });
+    }
+});
+</script>
+{% endblock %}

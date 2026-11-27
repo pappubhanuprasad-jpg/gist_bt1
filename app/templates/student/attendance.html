@@ -1,0 +1,243 @@
+{% extends "base.html" %}
+
+{% block title %}My Attendance{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+    <h3 class="fw-bold text-navy mb-1">Welcome, {{ current_user.full_name }}</h3>
+    <p class="text-muted small mb-0">
+        Roll No: <span class="font-monospace">{{ student.roll_number }}</span>
+        {% if section %} &bull; Section {{ section.name }}{% endif %}
+        {% if department %} &bull; {{ department.code }} &mdash; {{ department.name }}{% endif %}
+    </p>
+</div>
+
+<!-- SA-07 / SA-08: Overall attendance KPIs -->
+<div class="row g-3 mb-4">
+    <div class="col-12 col-sm-6 col-xl-3">
+        <div class="card card-sms bg-white p-3 h-100">
+            <div class="text-muted small fw-semibold text-uppercase">Overall Attendance</div>
+            <div class="kpi-number mt-1 {{ 'text-success' if overall.is_safe else 'text-danger' }}">{{ overall.pct }}%</div>
+            <div class="small text-muted">75% minimum required</div>
+        </div>
+    </div>
+    <div class="col-12 col-sm-6 col-xl-3">
+        <div class="card card-sms bg-white p-3 h-100">
+            <div class="text-muted small fw-semibold text-uppercase">Periods Held</div>
+            <div class="kpi-number mt-1">{{ overall.held }}</div>
+            <div class="small text-muted">
+                {{ overall.present }} present &bull; {{ overall.late }} late &bull; {{ overall.absent }} absent
+            </div>
+        </div>
+    </div>
+    <div class="col-12 col-sm-6 col-xl-3">
+        <div class="card card-sms bg-white p-3 h-100">
+            <div class="text-muted small fw-semibold text-uppercase">Periods Attended</div>
+            <div class="kpi-number mt-1">{{ overall.attended }}</div>
+            <div class="small text-muted">Late counted as present</div>
+        </div>
+    </div>
+    <div class="col-12 col-sm-6 col-xl-3">
+        <div class="card card-sms bg-white p-3 h-100">
+            <div class="text-muted small fw-semibold text-uppercase">Standing</div>
+            <div class="mt-2">
+                {% if overall.held == 0 %}
+                <span class="status-pill status-approved">No records yet</span>
+                {% elif overall.is_safe %}
+                <span class="status-pill status-approved">SAFE &mdash; CAN MISS {{ overall.can_miss }}</span>
+                {% else %}
+                <span class="status-pill status-rejected">SHORTAGE &mdash; MUST ATTEND {{ overall.must_attend }}</span>
+                {% endif %}
+            </div>
+            <div class="small text-muted mt-2">
+                {% if overall.is_safe %}
+                More periods you can miss and stay above 75%
+                {% else %}
+                Consecutive periods needed to reach 75%
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- SA-09 / SA-10: Subject-wise attendance + chart -->
+<div class="row g-4 mb-4">
+    <div class="col-lg-7">
+        <div class="card card-sms bg-white p-4 h-100">
+            <h5 class="fw-bold text-navy mb-3">Subject-wise Attendance</h5>
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Period</th>
+                            <th>Subject</th>
+                            <th class="text-end">Held</th>
+                            <th class="text-end">Attended</th>
+                            <th class="text-end">Percentage</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in subject_rows %}
+                        <tr>
+                            <td class="fw-semibold text-navy">{{ row.period }}</td>
+                            <td>
+                                <span class="font-monospace">{{ row.code }}</span>
+                                <div class="small text-muted">{{ row.name }}</div>
+                            </td>
+                            <td class="text-end">{{ row.held }}</td>
+                            <td class="text-end">{{ row.attended }}</td>
+                            <td class="text-end">
+                                <span class="status-pill {{ 'status-rejected' if row.is_low else 'status-approved' }}">
+                                    {{ row.pct }}%
+                                </span>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-5">
+        <div class="card card-sms bg-white p-4 h-100">
+            <h5 class="fw-bold text-navy mb-3">Attendance by Subject</h5>
+            <div style="position: relative; height: 260px;">
+                <canvas id="subjectsChart"></canvas>
+            </div>
+            <div class="small text-muted mt-2 text-center">Red bars indicate subjects below the 75% requirement.</div>
+        </div>
+    </div>
+</div>
+
+<!-- SA-15: Monthly calendar with per-day status + selected day details -->
+<div class="row g-4">
+    <div class="col-lg-7">
+        <div class="card card-sms bg-white p-4 h-100">
+            <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
+                <h5 class="fw-bold text-navy mb-0">{{ month_name }}</h5>
+                <div class="d-flex gap-3 small text-muted">
+                    <span><span class="d-inline-block rounded-circle" style="width:.8rem;height:.8rem;background-color:#198754;"></span> All present</span>
+                    <span><span class="d-inline-block rounded-circle" style="width:.8rem;height:.8rem;background-color:#FFC107;"></span> Partial</span>
+                    <span><span class="d-inline-block rounded-circle" style="width:.8rem;height:.8rem;background-color:#DC3545;"></span> Absent / Leave</span>
+                </div>
+            </div>
+
+            <table class="table table-bordered text-center align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Sun</th><th>Mon</th><th>Tue</th><th>Wed</th><th>Thu</th><th>Fri</th><th>Sat</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for week in calendar_weeks %}
+                    <tr>
+                        {% for day in week %}
+                        {% set bg_color = {'green': '#D1E7DD', 'red': '#F8D7DA', 'amber': '#FFF3CD', 'grey': '#E9ECEF', 'outside': '#FFFFFF'}[day.color] %}
+                        {% set dot_color = {'green': '#198754', 'red': '#DC3545', 'amber': '#FFC107', 'grey': '#ADB5BD', 'outside': '#FFFFFF'}[day.color] %}
+                        <td class="p-1"
+                            style="background-color: {{ bg_color }}; {% if not day.in_month %}opacity: 0.4;{% endif %}"
+                            {% if day.in_month and day.has_data %}onclick="showDay('{{ day.date_str }}')" style="cursor: pointer;"{% endif %}>
+                            <div class="d-flex flex-column align-items-center gap-1 py-1">
+                                <span class="d-inline-flex align-items-center justify-content-center rounded-circle fw-semibold text-dark"
+                                      style="width:1.8rem;height:1.8rem;font-size:.8rem;{% if day.on_leave %}background-color:#DC3545;color:#fff;{% else %}background-color:{{ dot_color }};{% endif %}">
+                                    {{ day.day_num }}
+                                </span>
+                                {% if day.on_leave %}
+                                <span class="badge bg-danger" style="font-size:.6rem;">LEAVE</span>
+                                {% endif %}
+                            </div>
+                        </td>
+                        {% endfor %}
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="col-lg-5">
+        <div class="card card-sms bg-white p-4 h-100" id="day-details">
+            <h5 class="fw-bold text-navy mb-3">Day Details</h5>
+            <p class="text-muted small mb-3" id="day-details-date">Select a highlighted day on the calendar.</p>
+            <table class="table table-sm align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Period</th>
+                        <th>Subject</th>
+                        <th class="text-end">Status</th>
+                    </tr>
+                </thead>
+                <tbody id="day-details-rows">
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+const dayDetails = {{ day_details_map | tojson }};
+const defaultDay = {{ default_day_str | tojson }};
+
+function statusClass(status) {
+    if (status === 'Present' || status === 'Late') return 'status-approved';
+    if (status === 'Absent' || status === 'Absent (Leave)') return 'status-rejected';
+    return 'status-pending';
+}
+
+function showDay(iso) {
+    const detail = dayDetails[iso];
+    if (!detail) return;
+
+    document.getElementById('day-details-date').textContent = detail.display_date;
+
+    const rows = document.getElementById('day-details-rows');
+    rows.innerHTML = '';
+    for (const p of detail.periods) {
+        const tr = document.createElement('tr');
+        tr.innerHTML =
+            '<td class="fw-semibold text-navy">' + p.period + '</td>' +
+            '<td><span class="font-monospace">' + p.subject_code + '</span> <span class="small text-muted">' + p.subject_name + '</span></td>' +
+            '<td class="text-end"><span class="status-pill ' + statusClass(p.status) + '">' + p.status + '</span></td>';
+        rows.appendChild(tr);
+    }
+}
+
+if (defaultDay) {
+    showDay(defaultDay);
+}
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+<script>
+const ctx = document.getElementById('subjectsChart');
+if (ctx) {
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: {{ chart_labels | tojson }},
+            datasets: [{
+                label: 'Attendance %',
+                data: {{ chart_values | tojson }},
+                backgroundColor: {{ chart_colors | tojson }},
+                borderRadius: 6
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false },
+                tooltip: { callbacks: { label: (c) => c.parsed.y + '%' } }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    max: 100,
+                    ticks: { callback: (v) => v + '%' }
+                }
+            }
+        }
+    });
+}
+</script>
+{% endblock %}

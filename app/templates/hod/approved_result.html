@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+
+{% block title %}Registration Approved — {{ outcome.roll_number }}{% endblock %}
+
+{% block content %}
+<div class="alert alert-success d-flex align-items-center justify-content-between mb-4" role="alert">
+    <div>
+        <strong class="fs-5">{{ outcome.student.full_name }} is now a student of {{ outcome.department.code }}!</strong>
+        <div class="small">Student account, section, and placement have been saved.</div>
+    </div>
+    <a href="/hod/registrations" class="btn btn-success btn-sm">Back to Registrations</a>
+</div>
+
+{% if outcome.mentor_warning %}
+<div class="alert alert-warning d-flex align-items-center mb-4" role="alert">
+    <strong>Warning:</strong>&nbsp;{{ outcome.mentor_warning }}.
+</div>
+{% endif %}
+
+<div class="row g-4">
+    <!-- Card 1: Credentials & Academic Assignment -->
+    <div class="col-lg-7">
+        <div class="card card-sms bg-white p-4 h-100">
+            <h5 class="fw-bold text-navy mb-3">Student Credentials &amp; Placement</h5>
+
+            <div class="p-3 rounded mb-4 text-center" style="background-color: #F4F6FA; border: 2px solid #0B2150;">
+                <small class="text-uppercase text-muted fw-semibold d-block">Generated Roll Number</small>
+                <div class="display-5 fw-bold text-navy font-monospace">{{ outcome.roll_number }}</div>
+            </div>
+
+            <div class="row g-3">
+                <div class="col-sm-6">
+                    <div class="border rounded p-3 bg-light">
+                        <small class="text-muted d-block">Login Username</small>
+                        <strong class="fs-5 font-monospace">{{ outcome.username }}</strong>
+                    </div>
+                </div>
+                <div class="col-sm-6">
+                    <div class="border rounded p-3 bg-warning-subtle border-warning">
+                        <small class="text-dark d-block">Temporary Password <span class="badge bg-danger">Shown Once</span></small>
+                        <strong class="fs-5 font-monospace text-dark">{{ outcome.temp_password }}</strong>
+                    </div>
+                </div>
+                <div class="col-sm-4">
+                    <div class="border rounded p-3">
+                        <small class="text-muted d-block">Section</small>
+                        <strong>{{ outcome.department.code }} — Section {{ outcome.section_name }}</strong>
+                    </div>
+                </div>
+                <div class="col-sm-4">
+                    <div class="border rounded p-3">
+                        <small class="text-muted d-block">Mentor Group</small>
+                        <strong>{{ outcome.mentor_group_name or "Unassigned" }}</strong>
+                    </div>
+                </div>
+                <div class="col-sm-4">
+                    <div class="border rounded p-3">
+                        <small class="text-muted d-block">Assigned Mentor</small>
+                        <strong>{{ outcome.mentor_name or "Not Assigned" }}</strong>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Card 2: Roll Number Breakdown -->
+    <div class="col-lg-5">
+        <div class="card card-sms bg-white p-4 h-100">
+            <h5 class="fw-bold text-navy mb-2">How This Roll Number Was Built</h5>
+            <p class="text-muted small mb-4">
+                Every student roll number follows the college format <code>YY + BRANCH + SERIAL</code>.
+            </p>
+
+            <div class="d-flex flex-column gap-3">
+                <div class="border rounded p-3 d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="fw-semibold">Admission Year</div>
+                        <small class="text-muted">Last two digits of admission year</small>
+                    </div>
+                    <span class="fs-4 fw-bold font-monospace text-navy">{{ outcome.year_part }}</span>
+                </div>
+
+                <div class="border rounded p-3 d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="fw-semibold">Branch Code</div>
+                        <small class="text-muted">{{ outcome.department.name }}</small>
+                    </div>
+                    <span class="fs-4 fw-bold font-monospace text-navy">{{ outcome.branch_part }}</span>
+                </div>
+
+                <div class="border rounded p-3 d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="fw-semibold">3-Digit Serial</div>
+                        <small class="text-muted">Sequential department counter</small>
+                    </div>
+                    <span class="fs-4 fw-bold font-monospace text-navy">{{ outcome.serial_part }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

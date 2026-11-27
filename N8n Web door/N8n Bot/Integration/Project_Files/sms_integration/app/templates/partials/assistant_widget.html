@@ -1,0 +1,66 @@
+{# College Assistant — floating chat widget.
+   Included once, just before </body>, in base.html and base_public.html.
+   Shows only when ASSISTANT_ENABLED is true in .env. #}
+
+{% if assistant_enabled %}
+<div class="assistant" id="assistant">
+
+  <button type="button"
+          class="assistant-launcher"
+          id="assistantLauncher"
+          aria-expanded="false"
+          aria-controls="assistantPanel"
+          aria-label="Open the college assistant">
+    <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+      <path d="M12 3c4.97 0 9 3.36 9 7.5 0 4.14-4.03 7.5-9 7.5-.9 0-1.77-.11-2.58-.32L5 20l.9-3.2C4.12 15.43 3 13.1 3 10.5 3 6.36 7.03 3 12 3z"/>
+    </svg>
+    <span class="assistant-launcher-text">Ask about the college</span>
+  </button>
+
+  <section class="assistant-panel" id="assistantPanel" hidden
+           aria-labelledby="assistantTitle">
+
+    <header class="assistant-head">
+      <div>
+        <h2 id="assistantTitle">College Assistant</h2>
+        <p>Answers from the GIST handbook</p>
+      </div>
+      <button type="button" class="assistant-close" id="assistantClose"
+              aria-label="Close the college assistant">&times;</button>
+    </header>
+
+    <div class="assistant-log" id="assistantLog" role="log" aria-live="polite">
+      <div class="assistant-msg bot">
+        Ask me about the college — branches and intake, admission and
+        registration, the fee structure, semesters and attendance, departments
+        and faculty, hostel, transport or the library.
+      </div>
+    </div>
+
+    <div class="assistant-chips" id="assistantChips">
+      <button type="button" class="assistant-chip">What is the fee structure for B.Tech?</button>
+      <button type="button" class="assistant-chip">How do I register as a first year student?</button>
+      <button type="button" class="assistant-chip">What documents do I bring at registration?</button>
+      <button type="button" class="assistant-chip">What is the intake for CSE?</button>
+      <button type="button" class="assistant-chip">What attendance do I need?</button>
+      <button type="button" class="assistant-chip">What are the hostel and transport charges?</button>
+    </div>
+
+    <form class="assistant-form" id="assistantForm" autocomplete="off">
+      <label class="visually-hidden" for="assistantInput">Your question</label>
+      <textarea id="assistantInput" rows="1"
+                placeholder="Ask about fees, registration, semesters…"></textarea>
+      <button type="submit" id="assistantSend">Send</button>
+    </form>
+
+    <p class="assistant-foot">
+      General college information only. For your own marks, attendance or dues,
+      use your dashboard.
+    </p>
+
+  </section>
+</div>
+
+<link rel="stylesheet" href="{{ url_for('static', path='/css/assistant.css') }}">
+<script src="{{ url_for('static', path='/js/assistant.js') }}" defer></script>
+{% endif %}

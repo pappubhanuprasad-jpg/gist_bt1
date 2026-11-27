@@ -1,0 +1,300 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GIST College Assistant — Student Help Desk</title>
+<style>
+  :root{
+    --navy:#0B1F4F; --navy-2:#13306E; --gold:#C69214; --gold-br:#F0B429;
+    --ink:#1B2435; --muted:#5A6880; --line:#DDE3EE; --bg:#F4F6FA; --card:#FFFFFF;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+       font-family:"Segoe UI",Roboto,-apple-system,system-ui,Arial,sans-serif;
+       display:flex;flex-direction:column;min-height:100vh}
+
+  header{background:var(--navy);color:#fff;padding:14px 20px;display:flex;flex-wrap:wrap;
+         align-items:center;gap:14px;border-bottom:4px solid var(--gold-br)}
+  .mark{width:38px;height:38px;border:2px solid var(--gold-br);border-radius:50%;
+        display:flex;align-items:center;justify-content:center;font-weight:700;
+        color:var(--gold-br);font-size:15px;letter-spacing:.5px;flex:none}
+  header h1{margin:0;font-size:17px;font-weight:600;line-height:1.25}
+  header p{margin:2px 0 0;font-size:12px;color:#C9D6EF}
+  header .grow{flex-grow:1}
+  .gear{background:transparent;border:1px solid #3F5B96;color:#C9D6EF;border-radius:6px;
+        padding:7px 13px;font-size:12.5px;cursor:pointer;font-family:inherit}
+  .gear:hover{border-color:var(--gold-br);color:#fff}
+
+  main{flex-grow:1;width:100%;max-width:860px;margin:0 auto;padding:18px 16px 0;
+       display:flex;flex-direction:column}
+
+  .panel{background:var(--card);border:1px solid var(--line);border-radius:10px;
+         padding:18px;margin-bottom:16px}
+  .panel h2{margin:0 0 4px;font-size:14px;letter-spacing:.3px}
+  .panel .hint{margin:0 0 14px;font-size:12.5px;color:var(--muted);line-height:1.55}
+  .panel label{display:block;font-size:11.5px;font-weight:600;letter-spacing:1.3px;
+               color:var(--muted);margin:12px 0 5px}
+  .panel input{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:7px;
+               font-size:14px;font-family:inherit;color:var(--ink)}
+  .panel input:focus{outline:2px solid var(--navy-2);outline-offset:1px}
+  .row{display:flex;gap:10px;align-items:center;margin-top:16px;flex-wrap:wrap}
+  .btn{background:var(--navy);color:#fff;border:0;border-radius:7px;padding:11px 20px;
+       font-size:14px;font-weight:600;cursor:pointer;font-family:inherit}
+  .btn:hover{background:var(--navy-2)}
+  .btn.ghost{background:#fff;color:var(--navy);border:1px solid var(--line)}
+  .note{font-size:12px;color:var(--muted);margin:0}
+
+  #chat{flex-grow:1;overflow-y:auto;padding:4px 2px 10px;display:flex;flex-direction:column;gap:12px}
+  .msg{max-width:78%;padding:11px 15px;border-radius:12px;font-size:14.5px;line-height:1.6;
+       white-space:pre-wrap;word-wrap:break-word}
+  .me{align-self:flex-end;background:var(--navy);color:#fff;border-bottom-right-radius:3px}
+  .bot{align-self:flex-start;background:var(--card);border:1px solid var(--line);
+       border-bottom-left-radius:3px}
+  .bot .src{display:block;margin-top:8px;font-size:11px;color:var(--muted)}
+  .err{align-self:flex-start;background:#FFF4F4;border:1px solid #F0C9C9;color:#7A2020;
+       font-size:13.5px;max-width:78%;padding:11px 15px;border-radius:12px;line-height:1.55}
+  .dots{align-self:flex-start;display:flex;gap:5px;padding:14px 16px;background:var(--card);
+        border:1px solid var(--line);border-radius:12px}
+  .dots i{width:7px;height:7px;border-radius:50%;background:#9AA7BF;display:block;
+          animation:b 1.1s infinite}
+  .dots i:nth-child(2){animation-delay:.18s}
+  .dots i:nth-child(3){animation-delay:.36s}
+  @keyframes b{0%,60%,100%{opacity:.3;transform:translateY(0)}30%{opacity:1;transform:translateY(-3px)}}
+
+  .chips{display:flex;flex-wrap:wrap;gap:8px;padding:2px 0 12px}
+  .chip{background:#fff;border:1px solid var(--line);border-radius:999px;padding:7px 14px;
+        font-size:12.5px;color:var(--navy);cursor:pointer;font-family:inherit}
+  .chip:hover{border-color:var(--gold);background:#FFFBF0}
+
+  footer{background:#fff;border-top:1px solid var(--line);padding:12px 16px 14px}
+  .bar{max-width:860px;margin:0 auto;display:flex;gap:10px;align-items:flex-end}
+  .bar textarea{flex-grow:1;resize:none;height:46px;max-height:120px;padding:12px 14px;
+       border:1px solid var(--line);border-radius:9px;font-size:14.5px;font-family:inherit;
+       line-height:1.4;color:var(--ink)}
+  .bar textarea:focus{outline:2px solid var(--navy-2);outline-offset:1px}
+  .bar button{flex:none;height:46px;padding:0 22px;border:0;border-radius:9px;
+       background:var(--navy);color:#fff;font-size:14.5px;font-weight:600;cursor:pointer;
+       font-family:inherit}
+  .bar button:disabled{background:#9AA7BF;cursor:default}
+  .tag{max-width:860px;margin:9px auto 0;font-size:11px;letter-spacing:1.6px;
+       color:var(--muted);text-align:center}
+  .hide{display:none}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="mark">QS</div>
+  <div>
+    <h1>GIST &middot; College Assistant</h1>
+    <p>Fees &middot; Admissions &amp; registration &middot; Semesters &middot; Departments &middot; Intake</p>
+  </div>
+  <div class="grow"></div>
+  <button class="gear" id="settingsBtn" type="button">Connection</button>
+</header>
+
+<main>
+
+  <section class="panel" id="setup">
+    <h2>Connect this page to your n8n workflow</h2>
+    <p class="hint">
+      This page runs on your laptop; the workflow runs on n8n Cloud. Paste the
+      <strong>Production URL</strong> of the <em>Ask Webhook</em> node and the access key you set
+      in the Header Auth credential. Both are kept in this browser only (localStorage) and are
+      never shown on screen again. While you are still building, use the <em>Test URL</em> and
+      press <em>Execute workflow</em> in n8n before each question.
+    </p>
+
+    <label for="url">WEBHOOK URL</label>
+    <input id="url" type="url" placeholder="https://your-instance.app.n8n.cloud/webhook/college-ask" autocomplete="off">
+
+    <label for="key">ACCESS KEY (header x-college-key)</label>
+    <input id="key" type="password" placeholder="the value from your Header Auth credential" autocomplete="off">
+
+    <div class="row">
+      <button class="btn" id="saveBtn" type="button">Save and start</button>
+      <button class="btn ghost hide" id="closeBtn" type="button">Cancel</button>
+      <p class="note">Runs fully on localhost. Nothing is sent anywhere except your own n8n.</p>
+    </div>
+  </section>
+
+  <div class="chips" id="chips">
+    <button class="chip" type="button">What is the fee structure for B.Tech?</button>
+    <button class="chip" type="button">How do I register as a first year student?</button>
+    <button class="chip" type="button">What documents do I bring at registration?</button>
+    <button class="chip" type="button">What is the intake for CSE and ECE?</button>
+    <button class="chip" type="button">How many marks are internal and external?</button>
+    <button class="chip" type="button">What is the minimum attendance?</button>
+    <button class="chip" type="button">Who is the Head of the CSE department?</button>
+    <button class="chip" type="button">What are the hostel and transport charges?</button>
+  </div>
+
+  <div id="chat" aria-live="polite"></div>
+</main>
+
+<footer>
+  <div class="bar">
+    <label for="q" class="hide">Your question</label>
+    <textarea id="q" placeholder="Ask about fees, registration, semesters, departments, intake…"></textarea>
+    <button id="send" type="button">Send</button>
+  </div>
+  <p class="tag">INNOVATE &middot; COLLABORATE &middot; TRANSFORM</p>
+</footer>
+
+<script>
+(function () {
+  "use strict";
+
+  var KEY_URL = "college_assistant_url";
+  var KEY_KEY = "college_assistant_key";
+
+  var chat = document.getElementById("chat");
+  var chips = document.getElementById("chips");
+  var setup = document.getElementById("setup");
+  var box = document.getElementById("q");
+  var sendBtn = document.getElementById("send");
+  var urlIn = document.getElementById("url");
+  var keyIn = document.getElementById("key");
+  var closeBtn = document.getElementById("closeBtn");
+
+  var sessionId = "web-" + Math.random().toString(36).slice(2, 10);
+  var busy = false;
+
+  function store(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
+  function load(k) { try { return localStorage.getItem(k) || ""; } catch (e) { return ""; } }
+
+  function configured() { return load(KEY_URL) !== ""; }
+
+  function showSetup(canCancel) {
+    setup.classList.remove("hide");
+    closeBtn.classList.toggle("hide", !canCancel);
+    urlIn.value = load(KEY_URL);
+    keyIn.value = "";
+    urlIn.focus();
+  }
+
+  function hideSetup() { setup.classList.add("hide"); box.focus(); }
+
+  function bubble(cls, text, source) {
+    var el = document.createElement("div");
+    el.className = cls;
+    el.textContent = text;
+    if (source) {
+      var s = document.createElement("span");
+      s.className = "src";
+      s.textContent = source;
+      el.appendChild(s);
+    }
+    chat.appendChild(el);
+    chat.scrollTop = chat.scrollHeight;
+    return el;
+  }
+
+  function thinking() {
+    var el = document.createElement("div");
+    el.className = "dots";
+    el.innerHTML = "<i></i><i></i><i></i>";
+    chat.appendChild(el);
+    chat.scrollTop = chat.scrollHeight;
+    return el;
+  }
+
+  function explain(status) {
+    if (status === 401 || status === 403) {
+      return "The workflow refused the key (" + status + "). Open Connection and retype the " +
+             "access key exactly as it is in the n8n Header Auth credential.";
+    }
+    if (status === 404) {
+      return "No workflow answered at that URL (404). If you are using the Test URL, press " +
+             "Execute workflow in n8n first \u2014 it listens for one call only. Otherwise " +
+             "check that the workflow is Active and that the path matches.";
+    }
+    if (status === 500) {
+      return "The workflow started but stopped with an error (500). Open the execution in n8n " +
+             "and look at the node marked red.";
+    }
+    return "The workflow answered with status " + status + ".";
+  }
+
+  function ask(question) {
+    if (busy) { return; }
+    if (!configured()) { showSetup(true); return; }
+
+    question = question.trim();
+    if (question === "") { return; }
+
+    chips.classList.add("hide");
+    bubble("msg me", question);
+    box.value = "";
+    busy = true;
+    sendBtn.disabled = true;
+    var wait = thinking();
+
+    fetch(load(KEY_URL), {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "x-college-key": load(KEY_KEY) },
+      body: JSON.stringify({ question: question, session_id: sessionId })
+    }).then(function (res) {
+      if (!res.ok) { throw new Error(String(res.status)); }
+      return res.json();
+    }).then(function (data) {
+      wait.remove();
+      var payload = Array.isArray(data) ? (data[0] || {}) : data;
+      var answer = payload.answer || payload.output || "";
+      if (answer === "") {
+        bubble("err", "The workflow replied, but with no answer field. Check the Format Answer node.");
+      } else {
+        bubble("msg bot", answer, payload.source || "");
+      }
+    }).catch(function (err) {
+      wait.remove();
+      var code = parseInt(err.message, 10);
+      if (code) {
+        bubble("err", explain(code));
+      } else {
+        bubble("err", "The browser could not reach the workflow. Almost always this is CORS: " +
+                      "this page is on localhost and n8n is on the cloud, so the Webhook node " +
+                      "needs Options \u2192 Allowed Origins (CORS) set to * . Check the URL too " +
+                      "\u2014 it should start https:// and end /webhook/college-ask.");
+      }
+    }).then(function () {
+      busy = false;
+      sendBtn.disabled = false;
+      box.focus();
+    });
+  }
+
+  document.getElementById("saveBtn").addEventListener("click", function () {
+    var u = urlIn.value.trim();
+    if (u === "") { urlIn.focus(); return; }
+    store(KEY_URL, u);
+    if (keyIn.value !== "") { store(KEY_KEY, keyIn.value); }
+    hideSetup();
+    if (chat.children.length === 0) {
+      bubble("msg bot",
+        "Hello. I answer from the college handbook — the branches and intake, admission and " +
+        "registration for the new batch, the fee structure, the semester and examination rules, " +
+        "the departments and faculty, the hostel, transport and library. Ask me anything from " +
+        "that list.", "College assistant");
+      chips.classList.remove("hide");
+    }
+  });
+
+  closeBtn.addEventListener("click", hideSetup);
+  document.getElementById("settingsBtn").addEventListener("click", function () { showSetup(true); });
+  sendBtn.addEventListener("click", function () { ask(box.value); });
+
+  box.addEventListener("keydown", function (e) {
+    if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); ask(box.value); }
+  });
+
+  chips.addEventListener("click", function (e) {
+    if (e.target.classList.contains("chip")) { ask(e.target.textContent); }
+  });
+
+  if (configured()) { hideSetup(); } else { showSetup(false); }
+})();
+</script>
+</body>
+</html>

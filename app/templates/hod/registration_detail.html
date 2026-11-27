@@ -1,0 +1,141 @@
+{% extends "base.html" %}
+
+{% block title %}{{ reg.reference_no }} — Review{% endblock %}
+
+{% block content %}
+{% set st = reg.status.value if reg.status.value is defined else reg.status %}
+
+<div class="mb-3">
+    <a href="/hod/registrations" class="btn btn-outline-secondary btn-sm">&larr; Back to Registrations</a>
+</div>
+
+{% if msg %}
+<div class="alert alert-success py-2">{{ msg }}</div>
+{% endif %}
+
+{% if error %}
+<div class="alert alert-danger py-2">{{ error }}</div>
+{% endif %}
+
+<div class="row g-4">
+    <!-- Left Column: Full Applicant Details & Documents -->
+    <div class="col-lg-8">
+        <div class="card card-sms bg-white p-4 mb-4">
+            <div class="d-flex justify-content-between align-items-start mb-3">
+                <div>
+                    <span class="text-muted small font-monospace">{{ reg.reference_no }}</span>
+                    <h4 class="fw-bold text-navy mb-0">{{ reg.full_name }}</h4>
+                </div>
+                <div>
+                    {% if st == 'approved' %}
+                    <span class="status-pill status-approved">Approved</span>
+                    {% elif st == 'rejected' %}
+                    <span class="status-pill status-rejected">Rejected</span>
+                    {% elif st == 'correction' %}
+                    <span class="status-pill status-pending">Sent Back for Correction</span>
+                    {% else %}
+                    <span class="status-pill status-pending">Pending Decision</span>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="row g-3 align-items-center mb-4">
+                <div class="col-sm-3 text-center">
+                    {% if reg.photo_path and not reg.photo_path.endswith('.pdf') %}
+                    <img src="{{ reg.photo_path }}" alt="Applicant Photo"
+                         class="img-thumbnail rounded" style="max-height: 150px; object-fit: cover;">
+                    {% else %}
+                    <div class="border rounded p-4 bg-light text-muted small">Photo Uploaded</div>
+                    {% endif %}
+                </div>
+                <div class="col-sm-9">
+                    <div class="row g-2 small">
+                        <div class="col-md-6"><strong>Date of Birth:</strong> {{ reg.dob }}</div>
+                        <div class="col-md-6"><strong>Gender:</strong> {{ reg.gender }}</div>
+                        <div class="col-md-6"><strong>Phone:</strong> {{ reg.phone }}</div>
+                        <div class="col-md-6"><strong>Email:</strong> {{ reg.email }}</div>
+                        <div class="col-md-6"><strong>Parent/Guardian:</strong> {{ reg.parent_name }}</div>
+                        <div class="col-md-6"><strong>Department:</strong> {{ department.code }} — {{ department.name }}</div>
+                        <div class="col-md-4"><strong>Quota:</strong> <span class="text-uppercase">{{ reg.quota }}</span></div>
+                        <div class="col-md-4"><strong>Entrance Rank:</strong> {{ reg.entrance_rank or "N/A" }}</div>
+                        <div class="col-md-4"><strong>Submitted:</strong> {{ reg.submitted_at.strftime('%Y-%m-%d') }}</div>
+                        <div class="col-md-6"><strong>10th Percentage:</strong> {{ "%.2f"|format(reg.tenth_percent) }}%</div>
+                        <div class="col-md-6"><strong>Inter / 12th Percentage:</strong> {{ "%.2f"|format(reg.inter_percent) }}%</div>
+                    </div>
+                </div>
+            </div>
+
+            <h6 class="fw-bold text-navy border-top pt-3 mb-3">Uploaded Documents</h6>
+            <div class="d-flex flex-wrap gap-2">
+                {% if reg.photo_path %}
+                <a href="{{ reg.photo_path }}" target="_blank" class="btn btn-outline-primary btn-sm">
+                    Open Passport Photo
+                </a>
+                {% endif %}
+                {% if reg.marks_memo_path %}
+                <a href="{{ reg.marks_memo_path }}" target="_blank" class="btn btn-outline-primary btn-sm">
+                    Open Marks Memo
+                </a>
+                {% endif %}
+                {% if reg.id_proof_path %}
+                <a href="{{ reg.id_proof_path }}" target="_blank" class="btn btn-outline-primary btn-sm">
+                    Open ID Proof
+                </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Right Column: HOD Decision Panel -->
+    <div class="col-lg-4">
+        <div class="card card-sms bg-white p-4">
+            <h5 class="fw-bold text-navy mb-3">HOD Decision</h5>
+
+            {% if st == 'pending' %}
+            <form method="post" id="hodDecisionForm">
+                <div class="mb-3">
+                    <label for="remarks" class="form-label fw-medium">
+                        Remarks <span class="text-muted small">(Required for Reject or Send Back)</span>
+                    </label>
+                    <textarea class="form-control" id="remarks" name="remarks" rows="3"
+                              placeholder="Enter remarks or instructions for the applicant...">{{ reg.hod_remarks or '' }}</textarea>
+                </div>
+
+                <div class="d-grid gap-2">
+                    <button type="submit"
+                            formaction="/hod/registrations/{{ reg.id }}/approve"
+                            class="btn btn-success fw-semibold">
+                        Approve &amp; Generate Roll Number
+                    </button>
+
+                    <button type="submit"
+                            formaction="/hod/registrations/{{ reg.id }}/correction"
+                            class="btn btn-warning fw-semibold">
+                        Send Back for Correction
+                    </button>
+
+                    <button type="submit"
+                            formaction="/hod/registrations/{{ reg.id }}/reject"
+                            class="btn btn-outline-danger fw-semibold">
+                        Reject Application
+                    </button>
+                </div>
+            </form>
+            {% else %}
+            <div class="alert alert-secondary small mb-3">
+                This registration has already been processed (status: <strong>{{ st }}</strong>) and cannot be approved again.
+            </div>
+            {% if reg.hod_remarks %}
+            <p class="small mb-2"><strong>Recorded Remarks:</strong> {{ reg.hod_remarks }}</p>
+            {% endif %}
+            {% if student %}
+            <div class="border rounded p-3 bg-light small">
+                <div class="text-muted">Assigned Roll Number</div>
+                <div class="fs-5 fw-bold text-navy font-monospace">{{ student.roll_number }}</div>
+            </div>
+            {% endif %}
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

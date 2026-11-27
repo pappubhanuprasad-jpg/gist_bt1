@@ -1,0 +1,21 @@
+{% extends "base_public.html" %}
+
+{% block title %}Access Denied{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-12 col-md-8 col-lg-6">
+        <div class="card card-sms bg-white p-4 p-lg-5 text-center">
+            <span class="status-pill status-rejected mb-3">403 Forbidden</span>
+            <h3 class="fw-bold text-navy mb-2">Access Denied</h3>
+            <p class="text-muted mb-4">
+                Your current role does not have permission to view this page.
+            </p>
+            <div class="d-flex justify-content-center gap-2">
+                <a href="/" class="btn text-white" style="background-color: #0B2150;">Go to My Dashboard</a>
+                <a href="/logout" class="btn btn-outline-secondary">Switch Account</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

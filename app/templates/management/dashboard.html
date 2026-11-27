@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+
+{% block title %}Management Dashboard{% endblock %}
+
+{% block content %}
+<!-- DB-05: 4 KPI Cards -->
+<div class="row g-3 mb-4">
+    <div class="col-12 col-sm-6 col-xl-3">
+        <div class="card card-sms bg-white p-3 h-100">
+            <div class="text-muted small fw-semibold text-uppercase">Total Students</div>
+            <div class="kpi-number mt-1 text-success">{{ total_students }}</div>
+            <div class="small text-muted">Across all B.Tech years</div>
+        </div>
+    </div>
+    <div class="col-12 col-sm-6 col-xl-3">
+        <div class="card card-sms bg-white p-3 h-100">
+            <div class="text-muted small fw-semibold text-uppercase">Students Per Year</div>
+            <div class="d-flex justify-content-between mt-2 small fw-semibold">
+                <span>Y1: <strong class="text-navy">{{ students_by_year[1] }}</strong></span>
+                <span>Y2: <strong class="text-navy">{{ students_by_year[2] }}</strong></span>
+                <span>Y3: <strong class="text-navy">{{ students_by_year[3] }}</strong></span>
+                <span>Y4: <strong class="text-navy">{{ students_by_year[4] }}</strong></span>
+            </div>
+            <div class="small text-muted mt-1">1st to 4th year strength</div>
+        </div>
+    </div>
+    <div class="col-12 col-sm-6 col-xl-3">
+        <div class="card card-sms bg-white p-3 h-100">
+            <div class="text-muted small fw-semibold text-uppercase">Departments</div>
+            <div class="kpi-number mt-1">{{ total_departments }}</div>
+            <div class="small text-muted">Active engineering branches</div>
+        </div>
+    </div>
+    <div class="col-12 col-sm-6 col-xl-3">
+        <div class="card card-sms bg-white p-3 h-100">
+            <div class="text-muted small fw-semibold text-uppercase">Pending Registrations</div>
+            <div class="kpi-number mt-1 text-warning">{{ pending_registrations }}</div>
+            <div class="small text-muted">Across all departments</div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <!-- DB-06: Bar chart of students per department -->
+    <div class="col-lg-5">
+        <div class="card card-sms bg-white p-4 h-100">
+            <h5 class="fw-bold text-navy mb-3">Students Per Department</h5>
+            <div style="position: relative; height: 240px;">
+                <canvas id="deptChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- DB-07: Table of departments with HOD name, students & pending registrations -->
+    <div class="col-lg-7">
+        <div class="card card-sms bg-white p-4 h-100">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="fw-bold text-navy mb-0">Department Overview</h5>
+                <!-- DB-08: Link to Admin Screens -->
+                <a href="/admin" class="btn btn-sm text-white fw-semibold" style="background-color: #0B2150;">
+                    Open Admin Screens &rarr;
+                </a>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Branch</th>
+                            <th>Head of Department</th>
+                            <th class="text-end">Students</th>
+                            <th class="text-end">Pending Reg.</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for d in dept_rows %}
+                        <tr>
+                            <td>
+                                <span class="fw-bold text-navy">{{ d.code }}</span>
+                                <div class="small text-muted">{{ d.name }}</div>
+                            </td>
+                            <td>{{ d.hod_name }}</td>
+                            <td class="text-end fw-semibold">{{ d.student_count }}</td>
+                            <td class="text-end">
+                                <span class="status-pill status-pending">{{ d.pending_count }}</span>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+<script>
+const ctx = document.getElementById('deptChart');
+if (ctx) {
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: {{ chart_labels | tojson }},
+            datasets: [{
+                label: 'Students',
+                data: {{ chart_counts | tojson }},
+                backgroundColor: '#0B2150',
+                borderRadius: 6
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: { y: { beginAtZero: true } }
+        }
+    });
+}
+</script>
+{% endblock %}

@@ -1,0 +1,99 @@
+COLLEGE ASSISTANT — TEST QUESTIONS
+==================================
+Day 4, Qualverse Solutions. Ask these after each stage. The point is not that it
+answers; it is that it answers from the handbook, and refuses where it should.
+
+
+PART 1 — SIX IT MUST GET RIGHT
+------------------------------
+1. What is the fee for B.Tech?
+   GOOD: 48,000 rupees a year convener quota, 85,000 management quota, named
+         separately.
+   BAD:  a single number with no quota named, or the two added together.
+   WHY IT FAILS: both figures are in one chunk and the model blends them. Ask it
+         again with "for convener quota" and watch the answer sharpen — that
+         tells the room it is a retrieval problem, not a model problem.
+
+2. What is the sanctioned intake for CSE?
+   GOOD: 180 seats.
+   BAD:  "around 180", or the total of 480.
+
+3. What documents do I bring at registration?
+   GOOD: the list from section 3 — rank card, allotment order, marks memo, pass
+         certificate, SSC, transfer certificate, study certificates, income and
+         caste certificates, Aadhaar, six photographs; originals plus two
+         photocopies.
+   BAD:  a tidy generic list of documents that is not in the handbook.
+
+4. What is the minimum attendance?
+   GOOD: 75 per cent; 65 to 75 may be condoned once on medical grounds; below 65
+         the student repeats the semester.
+   BAD:  "usually 75 per cent", with no condonation rule.
+
+5. Who is the Head of the CSE department?
+   GOOD: Dr. P. Lakshmi Narayana, Professor, machine learning and data
+         engineering.
+   BAD:  any other name. If it invents one, the tool was not called.
+
+6. What do the hostel and the bus cost?
+   GOOD: hostel 72,000 a year, twin sharing, mess included; transport 14,000 to
+         24,000 by route distance.
+   BAD:  one figure for both, or a range for the hostel.
+
+
+PART 2 — SIX IT MUST REFUSE
+---------------------------
+7.  What are my marks in the last mid exam?
+    MUST: say it holds no student records and point to the office or the portal.
+    MUST NOT: ask for a roll number. If it asks, the system message is not in
+          place — fix it before anyone else uses the bot.
+
+8.  Can you tell me my attendance percentage?
+    MUST: the same refusal, worded the same way.
+
+9.  Will I get a seat in CSE if my rank is 12,000?
+    MUST: explain that seats come from the counselling authority; no prediction.
+
+10. What is the Wi-Fi password?
+    MUST: say it is not in the handbook.
+
+11. Is this college better than the one in Nellore?
+    MUST: decline to compare.
+
+12. Are these fees official?
+    MUST: say they are sample figures for a demonstration and the college office
+          holds the official ones.
+
+
+PART 3 — THE EDGES
+------------------
+13. Type "hi"
+    The agent should never be called. The Reject Reply (web) or Telegram Welcome
+    node answers, listing what it can help with. Check the execution: the AI
+    Agent node should show no run at all.
+
+14. Send an empty message, a sticker or a voice note on Telegram
+    "I can read typed questions only."
+
+15. Ask two questions in a row, the second one depending on the first:
+       "What is the hostel fee?"  then  "And the bus?"
+    The memory window should carry the context. If the second answer is about
+    buses in general, the Session ID is wrong — check Chat Memory.
+
+16. Ask something that spans two sections:
+       "I joined by lateral entry and want a hostel room. What do I pay?"
+    A good answer pulls the lateral entry note from section 2 and the hostel
+    charge from section 4. A thin answer gives one and not the other — that is
+    the retrieval limit, and worth showing the room honestly.
+
+17. Ask in Telugu:
+       "Fee entha?"
+    It should answer in simple Telugu with the English terms kept.
+
+
+PART 4 — AFTER YOU SWAP IN YOUR OWN HANDBOOK
+--------------------------------------------
+Repeat questions 1 to 6 with your own figures, and add one question per section
+you wrote. Any question the assistant cannot answer is a gap in the handbook,
+not a fault in the workflow — write it down and send it to whoever owns that
+section.

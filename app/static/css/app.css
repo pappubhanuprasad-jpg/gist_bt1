@@ -1,0 +1,80 @@
+:root {
+    --sms-navy: #0B2150;
+    --sms-navy-light: #153375;
+    --sms-gold: #C9A227;
+}
+
+.sidebar-navy {
+    width: 250px;
+    min-width: 250px;
+    background-color: var(--sms-navy);
+}
+
+@media (max-width: 767.98px) {
+    .sidebar-navy {
+        width: 100%;
+        min-width: 100%;
+    }
+}
+
+.sidebar-link {
+    color: rgba(255, 255, 255, 0.82);
+    border-radius: 8px;
+    padding: 0.55rem 0.9rem;
+    font-weight: 500;
+    transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.sidebar-link:hover,
+.sidebar-link.active {
+    background-color: var(--sms-navy-light);
+    color: #ffffff;
+}
+
+.badge-gold {
+    background-color: var(--sms-gold);
+    color: var(--sms-navy);
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    padding: 0.45em 0.75em;
+}
+
+.text-navy {
+    color: var(--sms-navy);
+}
+
+.card-sms {
+    border: 0;
+    border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(11, 33, 80, 0.06);
+}
+
+.kpi-number {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--sms-navy);
+    line-height: 1.1;
+}
+
+.status-pill {
+    display: inline-block;
+    padding: 0.3rem 0.75rem;
+    border-radius: 999px;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.status-pending {
+    background-color: #FFF3CD;
+    color: #856404;
+}
+
+.status-approved {
+    background-color: #D1E7DD;
+    color: #0F5132;
+}
+
+.status-rejected {
+    background-color: #F8D7DA;
+    color: #842029;
+}

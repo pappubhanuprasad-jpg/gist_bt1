@@ -1,0 +1,14 @@
+fastapi
+uvicorn[standard]
+sqlmodel
+SQLAlchemy
+sqladmin
+greenlet
+Jinja2
+python-multipart
+itsdangerous
+PyJWT
+bcrypt
+python-dotenv
+pydantic
+Faker

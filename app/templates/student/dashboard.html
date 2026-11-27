@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+
+{% block title %}Student Dashboard{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+    <h3 class="fw-bold text-navy mb-1">Welcome, {{ first_name }}</h3>
+    <p class="text-muted small mb-0">Here is your B.Tech academic overview.</p>
+</div>
+
+{% if student %}
+<div class="row g-3 mb-4">
+    <div class="col-12 col-sm-6 col-xl-3">
+        <div class="card card-sms bg-white p-3 h-100">
+            <div class="text-muted small fw-semibold text-uppercase">Roll Number</div>
+            <div class="kpi-number mt-1 font-monospace">{{ student.roll_number }}</div>
+            <div class="small text-muted">
+                {{ department.code if department else '' }} &bull; Section {{ section.name if section else '' }}
+            </div>
+        </div>
+    </div>
+    <div class="col-12 col-sm-6 col-xl-3">
+        <div class="card card-sms bg-white p-3 h-100">
+            <div class="text-muted small fw-semibold text-uppercase">Year &amp; Semester</div>
+            <div class="kpi-number mt-1">
+                Y{{ section.current_year if section else '-' }} / S{{ section.current_semester if section else '-' }}
+            </div>
+            <div class="small text-muted">
+                Batch {{ batch.start_year if batch else '' }}–{{ batch.end_year if batch else '' }}
+            </div>
+        </div>
+    </div>
+    <!-- SA-18: Real overall attendance percentage -->
+    <div class="col-12 col-sm-6 col-xl-3">
+        <div class="card card-sms bg-white p-3 h-100">
+            <div class="text-muted small fw-semibold text-uppercase">Attendance</div>
+            {% if attendance_stats and attendance_stats.held > 0 %}
+            <div class="kpi-number mt-1 {% if attendance_stats.is_safe %}text-success{% else %}text-danger{% endif %}">
+                {{ attendance_stats.pct }}%
+            </div>
+            <div class="small text-muted">
+                {{ attendance_stats.attended }} / {{ attendance_stats.held }} periods &bull;
+                <a href="/student/attendance" class="text-decoration-none fw-semibold">View details</a>
+            </div>
+            {% else %}
+            <div class="kpi-number mt-1">0.0%</div>
+            <div class="small text-muted">No periods recorded yet</div>
+            {% endif %}
+        </div>
+    </div>
+    <div class="col-12 col-sm-6 col-xl-3">
+        <div class="card card-sms bg-white p-3 h-100">
+            <div class="text-muted small fw-semibold text-uppercase">Academic Status</div>
+            <div class="mt-2">
+                <span class="status-pill status-approved text-uppercase">{{ student.status }}</span>
+            </div>
+            <div class="small text-muted mt-2">Enrolled in {{ student.admission_year }}</div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-md-4">
+        <div class="card card-sms bg-white p-4 h-100">
+            <h5 class="fw-bold text-navy mb-3">My Details</h5>
+            <ul class="list-unstyled small mb-0 d-flex flex-column gap-2">
+                <li><strong>Full Name:</strong> {{ student.full_name }}</li>
+                <li><strong>Branch:</strong> {{ department.code if department else '' }} — {{ department.name if department else '' }}</li>
+                <li><strong>Admission Quota:</strong> <span class="text-uppercase">{{ student.quota }}</span></li>
+                <li><strong>Parent / Guardian:</strong> {{ student.parent_name }}</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card card-sms bg-white p-4 h-100">
+            <h5 class="fw-bold text-navy mb-3">My Mentor</h5>
+            {% if mentor_group and mentor_user %}
+            <ul class="list-unstyled small mb-0 d-flex flex-column gap-2">
+                <li><strong>Mentor Name:</strong> {{ mentor_user.full_name }}</li>
+                <li><strong>Email:</strong> {{ mentor_user.email }}</li>
+                <li><strong>Mentor Group:</strong> {{ mentor_group.name }}</li>
+            </ul>
+            {% else %}
+            <p class="text-muted small mb-0">Mentor group will be assigned shortly.</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card card-sms bg-white p-4 h-100">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <h5 class="fw-bold text-navy mb-0">Latest Notice</h5>
+                <span class="badge badge-gold">NEW</span>
+            </div>
+            {% if latest_notice %}
+            <h6 class="fw-semibold mt-2">{{ latest_notice.title }}</h6>
+            <p class="small text-muted mb-2">{{ latest_notice.body }}</p>
+            <small class="text-muted">Posted: {{ latest_notice.created_at.strftime('%Y-%m-%d') }}</small>
+            {% else %}
+            <p class="text-muted small mb-0">No notices published yet.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% else %}
+<div class="card card-sms bg-white p-4">
+    <p class="text-muted mb-0">Student profile record not found.</p>
+</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+
+{% block title %}Mentor Dashboard{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+    <h3 class="fw-bold text-navy mb-1">Welcome, {{ current_user.full_name }}</h3>
+    <p class="text-muted small mb-0">Here is your mentee group overview.</p>
+</div>
+
+{% if group %}
+<!-- Mentor group KPIs -->
+<div class="row g-3 mb-4">
+    <div class="col-12 col-sm-6 col-xl-3">
+        <div class="card card-sms bg-white p-3 h-100">
+            <div class="text-muted small fw-semibold text-uppercase">Mentees</div>
+            <div class="kpi-number mt-1 text-success">{{ students | length }}</div>
+            <div class="small text-muted">In {{ group.name }}</div>
+        </div>
+    </div>
+    <div class="col-12 col-sm-6 col-xl-3">
+        <div class="card card-sms bg-white p-3 h-100">
+            <div class="text-muted small fw-semibold text-uppercase">Branch</div>
+            <div class="kpi-number mt-1">{{ department.code if department else '-' }}</div>
+            <div class="small text-muted">{{ department.name if department else '' }}</div>
+        </div>
+    </div>
+    <div class="col-12 col-sm-6 col-xl-3">
+        <div class="card card-sms bg-white p-3 h-100">
+            <div class="text-muted small fw-semibold text-uppercase">Section</div>
+            <div class="kpi-number mt-1">{{ section.name if section else '-' }}</div>
+            <div class="small text-muted">Capacity {{ group.capacity }}</div>
+        </div>
+    </div>
+    <div class="col-12 col-sm-6 col-xl-3">
+        <div class="card card-sms bg-white p-3 h-100">
+            <div class="text-muted small fw-semibold text-uppercase">Batch</div>
+            <div class="kpi-number mt-1">{{ batch.start_year if batch else '' }}–{{ batch.end_year if batch else '' }}</div>
+            <div class="small text-muted">
+                Y{{ section.current_year if section else '-' }} / S{{ section.current_semester if section else '-' }}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Mentee roster -->
+<div class="card card-sms bg-white p-4">
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
+        <div>
+            <h5 class="fw-bold text-navy mb-0">{{ group.name }} — Mentee Roster</h5>
+            <small class="text-muted">
+                Section {{ section.name if section else '' }} &bull; {{ department.code if department else '' }}
+            </small>
+        </div>
+        <span class="badge badge-gold">{{ students | length }} Students</span>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th>Roll Number</th>
+                    <th>Student Name</th>
+                    <th>Email</th>
+                    <th>Phone</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for student in students %}
+                <tr>
+                    <td class="fw-medium font-monospace">{{ student.roll_number }}</td>
+                    <td>{{ student.full_name }}</td>
+                    <td>{{ student.email }}</td>
+                    <td>{{ student.phone }}</td>
+                    <td><span class="status-pill status-approved text-uppercase">{{ student.status }}</span></td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="5" class="text-center text-muted py-4">No mentees assigned to this group yet.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% else %}
+<div class="card card-sms bg-white p-4">
+    <h5 class="fw-bold text-navy mb-2">No Mentor Group Assigned</h5>
+    <p class="text-muted mb-0">
+        You are not currently assigned as a mentor for any section.
+        Please contact your Head of Department to get a mentor group assigned.
+    </p>
+</div>
+{% endif %}
+{% endblock %}
